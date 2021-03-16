@@ -121,7 +121,7 @@ public class InputHintManager : MonoBehaviour
                 continue;
             }
             // That controller was found
-            InputHintAssetItem sprite = controller.items.Find((potentialSprite) => potentialSprite.key == buttonName);
+            InputHintAssetItem sprite = controller.items.Find((potentialSprite) => new Regex(potentialSprite.key).Match(buttonName).Success);
 
             if (sprite == null) {
                 // That sprite wasn't found
