@@ -49,6 +49,9 @@ public class InputHintManager : MonoBehaviour
         iconBindings.Clear();
 
         var actionMaps = inputActions.actionMaps;
+
+
+        if (Keyboard.current != null) print($"Current keyboard layout: {Keyboard.current.keyboardLayout}");
         
         foreach (InputActionMap item in actionMaps) {
             foreach (var action in item.actions) {
@@ -66,6 +69,7 @@ public class InputHintManager : MonoBehaviour
                 print($"{actionName} -> {displayString}");
             }
         }
+        print("===");
     }
 
     public static bool ActionExists(string actionName) {
