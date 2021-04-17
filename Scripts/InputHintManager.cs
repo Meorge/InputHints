@@ -20,38 +20,44 @@ public class InputHintManager : MonoBehaviour
         if (instance == null) {
             instance = this;
             DontDestroyOnLoad(gameObject);
+            InputUser.onChange += DeviceChanged;
         }
 
         else {
             Debug.LogError("More than one instance of InputHintManager exists, deleting newer one");
             Destroy(this);
+            return;
         }
-        InputUser.onChange += DeviceChanged;
+        
     }
     
     void Start() {
+        print("Starting InputHintManager, rebuilding dictionary");
         RebuildDictionary();
     }
 
     void OnDestroy() {
+        print("Removing local subscriber to onChange");
         InputUser.onChange -= DeviceChanged;
     }
 
-    static internal void DeviceChanged(InputUser user, InputUserChange change, InputDevice device) {
+    internal void DeviceChanged(InputUser user, InputUserChange change, InputDevice device) {
+        print($"DeviceChanged event triggered: ${change}, ${device}");
         if (change == InputUserChange.ControlsChanged) {
-            instance.RebuildDictionary();
-            textMeshes.ForEach((textMesh) => textMesh.Refresh());
+            RebuildDictionary();
+            InputHintManager.textMeshes.ForEach((textMesh) => textMesh.Refresh());
         }
     }
 
     void RebuildDictionary()
     {
+        print("Rebuilding dictionary");
         iconBindings.Clear();
 
         var actionMaps = inputActions.actionMaps;
 
-
-        if (Keyboard.current != null) print($"Current keyboard layout: {Keyboard.current.keyboardLayout}");
+        string output = "";
+        if (Keyboard.current != null) output += $"Current keyboard layout: {Keyboard.current.keyboardLayout}\n";
         
         foreach (InputActionMap item in actionMaps) {
             foreach (var action in item.actions) {
@@ -66,9 +72,10 @@ public class InputHintManager : MonoBehaviour
 
                 iconBindings.Add(actionName, displayString);
 
-                print($"{actionName} -> {displayString}");
+                output += $"{actionName} -> {displayString}\n";
             }
         }
+        print(output);
         print("===");
     }
 
@@ -116,12 +123,15 @@ public class InputHintManager : MonoBehaviour
 
             // Now that we have this info, let's go find the name of the
             // sprite we want.
-            InputHintAsset controller = instance.hintAssets.Find((potentialController) => potentialController.controllerName == controllerName);
+            InputHintAsset controller = instance.hintAssets.Find((potentialController) => new Regex(potentialController.controllerName).Match(controllerName).Success);
 
             if (controller == null) {
                 // That controller wasn't found
                 Debug.LogError($"Failed to find controller \"{controllerName}\" for action \"{actionName}\"");
-                outputString += singleControl;
+
+
+                // BUG: If uncommented, this can leave information about non-connected controllers onscreen
+                // outputString += singleControl;
                 continue;
             }
             // That controller was found
