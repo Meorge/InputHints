@@ -43,7 +43,7 @@ public class InputHintManager : MonoBehaviour
 
     internal void DeviceChanged(InputUser user, InputUserChange change, InputDevice device) {
         print($"DeviceChanged event triggered: ${change}, ${device}");
-        if (change == InputUserChange.ControlsChanged) {
+        if (change == InputUserChange.ControlsChanged || change == InputUserChange.ControlSchemeChanged || change == InputUserChange.DevicePaired) {
             RebuildDictionary();
             InputHintManager.textMeshes.ForEach((textMesh) => textMesh.Refresh());
         }
