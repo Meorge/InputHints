@@ -36,11 +36,33 @@
                 },
                 {
                     "name": "",
+                    "id": "41dd5d19-f886-47e4-87eb-6127b5a59b78",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Confirm",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "cf6df171-6878-42c5-ad62-7503a3bf0761",
                     "path": "<Keyboard>/k",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard",
+                    "action": "Back",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6d6cfaa0-9083-4b7d-a2cf-35830baa8cc4",
+                    "path": "<Gamepad>/buttonEast",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
                     "action": "Back",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -56,6 +78,14 @@
                     "type": "Value",
                     "id": "2b30b7b8-576b-4c32-a7ed-433396edba6d",
                     "expectedControlType": "Stick",
+                    "processors": "",
+                    "interactions": ""
+                },
+                {
+                    "name": "A",
+                    "type": "Button",
+                    "id": "84d04348-1155-4f9a-940f-ef6665f2df27",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": ""
                 }
@@ -126,6 +156,50 @@
                     "action": "Walk",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "1D Axis",
+                    "id": "b764c51d-16f5-480f-a09d-9d758e284265",
+                    "path": "1DAxis",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "A",
+                    "isComposite": true,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "negative",
+                    "id": "87cb6bed-f2fe-411a-bb0d-674b0123c278",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard",
+                    "action": "A",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "positive",
+                    "id": "acf8a68d-5b73-4cba-b83c-486f241628e6",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard",
+                    "action": "A",
+                    "isComposite": false,
+                    "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "02c7e2cc-25d1-463e-8597-8f67ba54bae6",
+                    "path": "<Pen>/barrel1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "ThirdOne",
+                    "action": "A",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }
@@ -148,6 +222,17 @@
             "devices": [
                 {
                     "devicePath": "<Gamepad>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        },
+        {
+            "name": "ThirdOne",
+            "bindingGroup": "ThirdOne",
+            "devices": [
+                {
+                    "devicePath": "<Pen>",
                     "isOptional": false,
                     "isOR": false
                 }
