@@ -19,24 +19,19 @@ Add the "Input Hint Manager" component to a Game Object in your Scene, and drop 
 ![Image of Input Hint Manager](ReadmeImages/InputHints_Manager.png)
 
 ### Creating an Input Hint Asset
-**Input Hint Assets** store input hints; for example, they may map the "Cross" button on a DualShock controller to a TextMeshPro sprite of that button.
+**Input Hint Assets** store input hints; for example, they can map the "buttonSouth" button on a DualShock controller - the Cross button - to a TextMeshPro sprite of that button.
 
 To create a new Input Hint Asset, navigate to "Create -> Input Hints -> Input Hint Asset" in the Project tab.
 
 Set the *Name* field in the new Input Hint Asset to the name of the controller you want to include input hints for.
 
 Set the length of *Items* to the number of input hints you'd like for this controller. Each item within the *Items* list relates a single input to a display string.
-* **Key** - This is the Display Name of this input as shown in the Input Debugger*.
+* **Key** - This is the "Name" (not "Display Name") of this input as shown in the Input Debugger*.
 * **Text Mesh Pro String** - This string will replace instances of the Key, when encountered.
 
 ![Image of Input Hint Asset](ReadmeImages/InputHints_HintAsset.png)
 
 Add each Input Hint Asset you create to the Input Hint Manager component.
-
-#### ***IMPORTANT NOTE**
-You can *usually* find the key and controller name values in the Input Debugger, under "Display Name". However, the names that Unity gives when running a game sometimes differ from these values, so it's important to test. InputHints will tell you in the Console if it can't find a key or controller name that corresponds to an action - you can use this information to correctly set your key and controller name values.
-
-
 
 ### Displaying Hints in a TextMeshPro Object
 Attach the "Text Mesh Pro With Input Hints" component to all GameObjects with TextMeshPro components that you would like to have button hints on.
