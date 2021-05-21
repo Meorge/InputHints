@@ -3,160 +3,107 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Users;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Meorge.InputHints {
-public class InputHintManager : MonoBehaviour
-{
-    public static InputHintManager instance { get; private set; } = null;
-    [SerializeField] InputActionAsset inputActions = null;
-
-    [SerializeField] List<InputHintAsset> hintAssets = new List<InputHintAsset>();
-
-    Dictionary<string, string> iconBindings = new Dictionary<string, string>();
-
-    internal static List<TextMeshProWithInputHints> textMeshes = new List<TextMeshProWithInputHints>();
-
-    void Awake() {
-        if (instance == null) {
-            instance = this;
-            DontDestroyOnLoad(gameObject);
-            InputUser.onChange += DeviceChanged;
-        }
-
-        else {
-            Debug.LogError("More than one instance of InputHintManager exists, deleting newer one");
-            Destroy(this);
-            return;
-        }
-        
-    }
-    
-    void Start() {
-        print("Starting InputHintManager, rebuilding dictionary");
-        RebuildDictionary();
-    }
-
-    void OnDestroy() {
-        print("Removing local subscriber to onChange");
-        InputUser.onChange -= DeviceChanged;
-    }
-
-    internal void DeviceChanged(InputUser user, InputUserChange change, InputDevice device) {
-        print($"DeviceChanged event triggered: ${change}, ${device}");
-        if (change == InputUserChange.ControlsChanged || change == InputUserChange.ControlSchemeChanged || change == InputUserChange.DevicePaired) {
-            RebuildDictionary();
-            InputHintManager.textMeshes.ForEach((textMesh) => textMesh.Refresh());
-        }
-    }
-
-    void RebuildDictionary()
+    public class InputHintManager : MonoBehaviour
     {
-        print("Rebuilding dictionary");
-        iconBindings.Clear();
+        public static InputHintManager instance { get; private set; } = null;
+        [SerializeField] InputActionAsset inputActions = null;
 
-        var actionMaps = inputActions.actionMaps;
+        [SerializeField] List<InputHintAsset> hintAssets = new List<InputHintAsset>();
 
-        string output = "";
-        if (Keyboard.current != null) output += $"Current keyboard layout: {Keyboard.current.keyboardLayout}\n";
+        Dictionary<string, string> iconBindings = new Dictionary<string, string>();
+
+        internal static List<TextMeshProWithInputHints> textMeshes = new List<TextMeshProWithInputHints>();
+
+        void Awake() {
+            if (instance == null) {
+                instance = this;
+                DontDestroyOnLoad(gameObject);
+                InputUser.onChange += DeviceChanged;
+            }
+
+            else {
+                Debug.LogError("More than one instance of InputHintManager exists, deleting newer one");
+                Destroy(this);
+                return;
+            }    
+        }
         
-        foreach (InputActionMap item in actionMaps) {
-            foreach (var action in item.actions) {
-                var actionName = $"{item.name}/{action.name}";
+        void OnDestroy() {
+            print("Removing local subscriber to onChange");
+            InputUser.onChange -= DeviceChanged;
+        }
 
-                var displayStringOptions = 
-                    InputBinding.DisplayStringOptions.DontOmitDevice |
-                    InputBinding.DisplayStringOptions.DontUseShortDisplayNames
-                ;
-
-                var displayString = action.GetBindingDisplayString(displayStringOptions);
-
-                iconBindings.Add(actionName, displayString);
-
-                output += $"{actionName} -> {displayString}\n";
+        internal void DeviceChanged(InputUser user, InputUserChange change, InputDevice device) {
+            print($"DeviceChanged event triggered: {change}");
+            if (change == InputUserChange.ControlsChanged || change == InputUserChange.ControlSchemeChanged || change == InputUserChange.DevicePaired) {
+                InputHintManager.textMeshes.ForEach((textMesh) => textMesh.Refresh());
             }
         }
-        print(output);
-        print("===");
-    }
 
-    public static bool ActionExists(string actionName) {
-        return instance.iconBindings.ContainsKey(actionName);
-    }
-
-    public static string GetStringKeyForAction(string actionName) {
-        return instance.iconBindings[actionName];
-    }
-
-    public static string GetTMProSpriteForAction(string actionName) {
-        // actionName is something like "Gameplay/Fire"
-
-        // Let's get the string key that corresponds to this action
-        // something like "A [Xbox Wireless Controller]"
-
-        if (!ActionExists(actionName)) {
-            Debug.LogError($"Failed to find action in iconBindings: \"{actionName}\"");
-            return actionName;
+        public static bool ActionExists(string actionName) {
+            return instance.iconBindings.ContainsKey(actionName);
         }
 
-        string key = GetStringKeyForAction(actionName);
+        public static string GetStringKeyForAction(string actionName) {
+            return instance.iconBindings[actionName];
+        }
 
-        string outputString = "";
-        string[] allButtons = key.Split(new string[] { " | " }, System.StringSplitOptions.RemoveEmptyEntries);
+        public static string GetTMProSpriteForAction(string actionName) {
+            // actionName is something like "Gameplay/Fire"
+            var action = instance.inputActions.FindAction(actionName);
 
-        foreach (string singleControl in allButtons) {        
-            // Next, we need to separate this into two strings - one that
-            // stores the actual button (like "A"), and one that stores
-            // the controller name (like "Xbox Wireless Controller").
-            // print($"Parsing \"{singleControl}\"");
-            string pattern = @"^(?<buttonName>.+?)\s\[(?<controllerName>.+?)\]$";
+            // List of path strings for controls
+            var controls = action.controls.Select(control => control.path);
+
+            // This regex pattern will allow us to split up controller paths.
+            // For example, "/XboxOneGampadMacOSWireless/buttonEast" will be split
+            // into "XboxOneGamepadMacOSWireless" and "buttonEast".
+            var splitControlPattern = @"^/(?<DeviceName>.+?)/(?<ControlName>.+)$";
+            var splitControlRegex = new Regex(splitControlPattern);
+
+            string output = "";
+            foreach (var control in controls) {
+                Match controlMatch = splitControlRegex.Match(control);
+
+                if (!controlMatch.Success) {
+                    Debug.LogError($"Failed to parse \"{control}\" for action \"{actionName}\"");
+                    output += control;
+                    continue;
+                }
+
+                var deviceName = controlMatch.Groups["DeviceName"].Value;
+                var controlName = controlMatch.Groups["ControlName"].Value;
+
+                // Find the hint asset that corresponds to this controller
+                InputHintAsset hintAsset = instance.hintAssets.Find(potential => new Regex(potential.controllerName).Match(deviceName).Success);
+
+                if (hintAsset == null) {
+                    Debug.LogError($"Failed to find hint asset for controller \"{deviceName}\" for action \"{actionName}\"");
+                    continue;
+                }
+
+                InputHintAssetItem item = hintAsset.items.Find(potential => new Regex(potential.key).Match(controlName).Success);
+                
+                if (item == null) {
+                    Debug.LogError($"Failed to find item for control name \"{controlName}\" on controller \"{deviceName}\" for action \"{actionName}\"");
+                    output += controlName;
+                    continue;
+                }
+
+                output += item.textMeshProString;
+            }
+
+            return output;
+        }
+
+        public static string ReplaceStringsWithTMProSprites(string text) {
+            string pattern = @"{{(.*?)}}";
             Regex regex = new Regex(pattern);
-            Match match = regex.Match(singleControl);
-
-            if (!match.Success) {
-                Debug.LogError($"Failed to parse \"{singleControl}\" for action \"{actionName}\"");
-                outputString += singleControl;
-                continue;
-            }
-
-            string buttonName = match.Groups["buttonName"].Value;
-            string controllerName = match.Groups["controllerName"].Value;
-
-            // Now that we have this info, let's go find the name of the
-            // sprite we want.
-            InputHintAsset controller = instance.hintAssets.Find((potentialController) => new Regex(potentialController.controllerName).Match(controllerName).Success);
-
-            if (controller == null) {
-                // That controller wasn't found
-                Debug.LogError($"Failed to find controller \"{controllerName}\" for action \"{actionName}\"");
-
-
-                // BUG: If uncommented, this can leave information about non-connected controllers onscreen
-                // outputString += singleControl;
-                continue;
-            }
-            // That controller was found
-            InputHintAssetItem sprite = controller.items.Find((potentialSprite) => new Regex(potentialSprite.key).Match(buttonName).Success);
-
-            if (sprite == null) {
-                // That sprite wasn't found
-                Debug.LogError($"Failed to find icon \"{controllerName}.{buttonName}\" for action \"{actionName}\"");
-                outputString += buttonName;
-                continue;
-            }
-
-            outputString += sprite.textMeshProString;
-
+            string result = regex.Replace(text, (match) => GetTMProSpriteForAction(match.Groups[1].Value));
+            return result;
         }
-
-        // Return the relevant sprite tag
-        return outputString == "" ? key : outputString;
     }
-
-    public static string ReplaceStringsWithTMProSprites(string text) {
-        string pattern = @"{{(.*?)}}";
-        Regex regex = new Regex(pattern);
-        string result = regex.Replace(text, (match) => GetTMProSpriteForAction(match.Groups[1].Value));
-        return result;
-    }
-}
 }

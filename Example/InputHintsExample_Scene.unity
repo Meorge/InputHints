@@ -255,6 +255,7 @@ MonoBehaviour:
   inputActions: {fileID: -944628639613478452, guid: a8aea7228071d4bf7bb8b227b29971b7, type: 3}
   hintAssets:
   - {fileID: 11400000, guid: e0c6e2715c4d54ca3b4a78875055547a, type: 2}
+  - {fileID: 11400000, guid: 482efbc23c01d468a8d445b050f3ff66, type: 2}
 --- !u!4 &611587990
 Transform:
   m_ObjectHideFlags: 0
