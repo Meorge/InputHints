@@ -25,19 +25,19 @@ namespace Meorge.InputHints {
             }
 
             else {
-                Debug.LogError("More than one instance of InputHintManager exists, deleting newer one");
+                // Debug.LogError("More than one instance of InputHintManager exists, deleting newer one");
                 Destroy(this);
                 return;
             }    
         }
         
         void OnDestroy() {
-            print("Removing local subscriber to onChange");
+            // print("Removing local subscriber to onChange");
             InputUser.onChange -= DeviceChanged;
         }
 
         internal void DeviceChanged(InputUser user, InputUserChange change, InputDevice device) {
-            print($"DeviceChanged event triggered: {change}");
+            // print($"DeviceChanged event triggered: {change}");
             if (change == InputUserChange.ControlsChanged || change == InputUserChange.ControlSchemeChanged || change == InputUserChange.DevicePaired) {
                 InputHintManager.textMeshes.ForEach((textMesh) => textMesh.Refresh());
             }
